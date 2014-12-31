@@ -8,7 +8,7 @@ class GeoNames
 
   def initialize(args = {})
     @default_country = args[:default_country]
-    @username = args[:username]
+    @username = args[:geonames_username]
     cache_expiration_time = args[:cache_expiration_time] || 7200
     @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
   end

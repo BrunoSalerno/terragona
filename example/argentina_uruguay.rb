@@ -5,12 +5,12 @@ require_relative('../terragona')
 
 opts={
     :default_country=>'AR',
-    :username=>'brunosalerno',
+    :geonames_username=>'brunosalerno',
     :allow_holes=>false,
     :target_percent=>0.75,
-    :user=>'bruno',
-    :password=>'bruno',
-    :database=>'geotags'
+    :db_username=>'bruno',
+    :db_password=>'bruno',
+    :db_name=>'geotags'
 }
 
 paises=[{:name=>'Argentina',:fcode=>'PCLI'},
@@ -18,5 +18,3 @@ paises=[{:name=>'Argentina',:fcode=>'PCLI'},
 
 terragona = Terragona.new(opts)
 terragona.create_family_polygons(paises, 'pcli', 'adm1')
-
-require 'pry'; binding.pry

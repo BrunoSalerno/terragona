@@ -11,12 +11,12 @@ class ConcaveHull
     @max_distance_ratio = options[:max_distance_ratio] || 1.6
 
     db_options={
-        :database=> options[:database],
-        :user=> options[:user],
-        :password=> options[:password],
-        :host=> options[:host] || 'localhost',
-        :port=> options[:port] || 5432,
-        :max_connections=> options[:max_connections] || 10
+        :database=> options[:db_name],
+        :user=> options[:db_username],
+        :password=> options[:db_password],
+        :host=> options[:db_host] || 'localhost',
+        :port=> options[:db_port] || 5432,
+        :max_connections=> options[:db_max_connections] || 10
     }
 
     @db = Sequel.postgres(db_options)

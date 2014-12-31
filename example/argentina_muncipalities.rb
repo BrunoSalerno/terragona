@@ -1,16 +1,19 @@
 #
-# Example: retrieve Argentina and Uruguay geometries
+# Example: retrieve Argentina provinces and municipalities.
+# Since municipalities are not well tagged, municipalities
+# don't look good.
 #
+
 require_relative('../terragona')
 
 opts={
     :default_country=>'AR',
-    :username=>'brunosalerno',
+    :geonames_username=>'brunosalerno',
     :allow_holes=>false,
     :target_percent=>0.75,
-    :user=>'bruno',
-    :password=>'bruno',
-    :database=>'geotags'
+    :db_username=>'bruno',
+    :db_password=>'bruno',
+    :db_name=>'geotags'
 }
 
 provincias=[{:name=>'Buenos Aires F.D.',:fcode=>'ADM1',:children_fcode=>'PPLX'},
