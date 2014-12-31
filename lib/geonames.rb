@@ -47,12 +47,17 @@ class GeoNames
     #                end
 
     geonames.each{|g|
-      if (fcode != 'PCLI' and g[:adminName1] == place[:name]) or
-      (fcode == 'PCLI' and g[:countryName] == place[:name])
+      field_to_compare = case fcode
+                           when 'PCLI' then :countryName
+                           when 'PPLX' then :adminName1 #Caso CABA
+                           when 'ADM1' then :adminName1
+                           when 'ADM2' then :adminName2
+                         end
 
+      if field_to_compare and g[field_to_compare] and g[field_to_compare].similar(place[:name])>40
         points.push({:lon=>g[:lng],:lat=>g[:lat]})
         if g[:fcode] == children_fcode
-          children_places.push({:name=>g[:name],:id=>g[:geonameId],:fcode=>g[:fcode]})
+          children_places.push({:name=>g[:name],:id=>g[:geonameId],:fcode=>g[:fcode],:country=>g[:countryCode]})
         end
       end
     }
