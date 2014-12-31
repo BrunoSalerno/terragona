@@ -12,7 +12,8 @@ class Terragona
     concave_hull = ConcaveHull.new(opts)
 
     names.map{|n|
-      name= geonames.search_in_place(n[:place],n[:name],n[:fcode], n[:children_fcode],n[:admin_boundary],n[:country])
+      name= geonames.search_in_place(
+          n[:place],n[:name],n[:fcode], n[:children_fcode],n[:admin_boundary],n[:country],n[:field_to_compare])
 
       if name[:points].count < 3
         puts "No points for #{n[:name]}"

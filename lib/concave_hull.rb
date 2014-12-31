@@ -2,12 +2,13 @@ require 'geokit'
 require 'sequel'
 
 class ConcaveHull
-  def initialize(options={})
+  def initialize(options = {})
     @projection = options[:projection] || 4326
     @table  = options[:table] || 'concave_hull'
     @target_percent = options[:target_percent] || 0.8
     @allow_holes = options[:allow_holes]
-    @allow_holes=true if @allow_holes.nil?
+    @allow_holes = true if @allow_holes.nil?
+    @max_distance_ratio = options[:max_distance_ratio] || 1.6
 
     db_options={
         :database=> options[:database],
@@ -53,7 +54,7 @@ class ConcaveHull
     @db << "INSERT INTO #{@table} (tags, count, geometry) VALUES ('#{tags}',#{count},#{query})"
   end
 
-  def filter_points_by_distance(points,max_distance_ratio=1.5)
+  def filter_points_by_distance(points)
     distances= points.map {|p0|
       sum = points.map {|pf|
         Geokit::LatLng.new(p0[:lat],p0[:lon]).distance_to(Geokit::LatLng.new(pf[:lat],pf[:lon]))
@@ -62,7 +63,7 @@ class ConcaveHull
     }
     average_distance=average(distances.map{|d| d[:average]})
     distances.map {|d|
-      d if d[:average] <= average_distance * max_distance_ratio
+      d if d[:average] <= average_distance * @max_distance_ratio
     }.compact
   end
 

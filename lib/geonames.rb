@@ -6,14 +6,16 @@ require 'json'
 class GeoNames
   URL='http://api.geonames.org/searchJSON'
 
-  def initialize(args={})
-    @default_country=args[:default_country]
-    @username=args[:username]
-    @cache=Diskcached.new('/tmp/cache',7200,true)
+  def initialize(args = {})
+    @default_country = args[:default_country]
+    @username = args[:username]
+    cache_expiration_time = args[:cache_expiration_time] || 7200
+    @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
   end
 
-  def search_in_place(place,name,fcode,children_fcode,admin_boundary,country)
+  def search_in_place(place,name,fcode,children_fcode,admin_boundary,country,field_to_compare)
     country ||= @default_country
+
     geonames = @cache.cache("geonames_name=#{name}&country=#{country}") do
       url = URI.escape("#{URL}?q=#{name}&country=#{country}&order_by=relevance&maxRows=1000&username=#{@username}")
       request = HTTPI::Request.new(url)
@@ -38,22 +40,23 @@ class GeoNames
 
     # Lookup for children and points
 
-    #children_fcode= case fcode
-    #                  when 'ADM1' then 'ADM2'
-    #                  when 'ADM2' then 'ADM3'
-    #                  when 'ADM3' then 'ADM4'
-    #                  when 'ADM4' then 'ADM5'
-    #                  when 'PPLC' then 'PPLX'
-    #                end
+    children_fcode ||= case fcode
+                         when 'PCLI' then 'ADM1'
+                         when 'ADM1' then 'ADM2'
+                         when 'ADM2' then 'ADM3'
+                         when 'ADM3' then 'ADM4'
+                         when 'ADM4' then 'ADM5'
+                         when 'PPLC' then 'PPLX'
+                       end
 
-    geonames.each{|g|
-      field_to_compare = case fcode
+    field_to_compare ||= case fcode
                            when 'PCLI' then :countryName
-                           when 'PPLX' then :adminName1 #Caso CABA
                            when 'ADM1' then :adminName1
                            when 'ADM2' then :adminName2
                          end
 
+
+    geonames.each{|g|
       if field_to_compare and g[field_to_compare] and g[field_to_compare].similar(place[:name])>40
         points.push({:lon=>g[:lng],:lat=>g[:lat]})
         if g[:fcode] == children_fcode
