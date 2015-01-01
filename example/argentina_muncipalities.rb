@@ -1,7 +1,5 @@
 #
-# Example: retrieve Argentina provinces and municipalities.
-# Since municipalities are not well tagged, municipalities
-# don't look good.
+# Example: retrieve some Argentina provinces and municipalities.
 #
 
 require_relative('../terragona')
@@ -31,4 +29,4 @@ provincias=[{:name=>'Buenos Aires F.D.',:fcode=>'ADM1',:children_fcode=>'PPLX'},
             {:name=>'Río Negro',:fcode=>'ADM1'}]
 
 terragona = Terragona.new(opts)
-terragona.create_family_polygons(provincias, 'provincias', 'municipios')
+terragona.create_polygons_family(provincias, 'provincias', 'municipios')

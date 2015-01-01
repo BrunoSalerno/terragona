@@ -51,7 +51,7 @@ class ConcaveHull
   end
 
   def create_concave_hull(query, tags, count)
-    @db << "INSERT INTO #{@table} (tags, count, geometry) VALUES ('#{tags}',#{count},#{query})"
+    @db << "INSERT INTO #{@table} (tags, count, geometry) VALUES ('#{clean_str tags}',#{count},#{query})"
   end
 
   def filter_points_by_distance(points)
@@ -73,7 +73,11 @@ class ConcaveHull
     }.join(',')
   end
 
-  def average (arr)
+  def average(arr)
     arr.inject{ |sum, el| sum + el }.to_f / arr.size
+  end
+
+  def clean_str(str)
+    str.gsub("'",' ')
   end
 end

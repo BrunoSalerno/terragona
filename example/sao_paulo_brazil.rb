@@ -1,10 +1,10 @@
 #
-# Example: retrieve Argentina and Uruguay geometries
+# Example: retrieve Sao Paulo (Brazil) geometries
 #
 require_relative('../terragona')
 
 opts={
-    :default_country=>'AR',
+    :default_country=>'BR',
     :geonames_username=>'brunosalerno',
     :allow_holes=>false,
     :target_percent=>0.75,
@@ -13,8 +13,7 @@ opts={
     :db_name=>'geotags'
 }
 
-paises=[{:name=>'Argentina',:fcode=>'PCLI'},
-        {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
+sp=[{:name=>'São Paulo',:fcode=>'ADM1'}]
 
 terragona = Terragona.new(opts)
-terragona.create_polygons_family(paises, 'pcli', 'adm1')
+terragona.create_polygons_family(sp, 'sao_paulo', 'sao_paulo_municipalities')
