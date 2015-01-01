@@ -13,12 +13,11 @@ class GeoNames
     @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
   end
 
-  def search_in_place(place,name,fcode,children_fcode,country,field_to_compare)
+  def search_in_place(name,fcode,children_fcode,country,field_to_compare,field_to_compare_value)
     country ||= @default_country
 
     points = []
     children_places = []
-    place ||= {}
 
     children_fcode ||= case fcode
                          when 'PCLI' then 'ADM1'
@@ -29,33 +28,33 @@ class GeoNames
                          when 'PPLC' then 'PPLX'
                        end
 
-    field_to_compare ||= case fcode
-                           when 'PCLI' then :countryCode
-                           when 'ADM1' then :adminCode1
-                           when 'ADM2' then :adminCode2
-                           when 'ADM3' then :adminCode3
-                         end
+    field_to_compare ||= calculate_field_to_compare(fcode)
+    children_field_to_compare = calculate_field_to_compare(children_fcode)
 
-    if place.empty?
+    if field_to_compare_value.nil?
       fetch_geonames(name,country,nil,nil).each{|g|
         if g[:fcode]==fcode
-          place[:name]=g[:name]
-          place[:id]=g[:geonameId]
-          place[field_to_compare]=g[field_to_compare]
+          name = g[:name]
+          field_to_compare_value = g[field_to_compare]
           break
         end
       }
     end
 
     # Lookup for children and points
-    fetch_geonames(name,country,field_to_compare.to_s,place[field_to_compare]).each{|g|
+    fetch_geonames(name,country,field_to_compare.to_s,field_to_compare_value).each{|g|
         points.push({:lon=>g[:lng],:lat=>g[:lat]})
-        if g[:fcode] == children_fcode
-          children_places.push({:name=>g[:name],:id=>g[:geonameId],:fcode=>g[:fcode],:country=>g[:countryCode]})
+        if g[:fcode] == children_fcode and children_field_to_compare
+          child={:name=>g[:name],
+                 :id=>g[:geonameId],
+                 :fcode=>g[:fcode],
+                 :country=>g[:countryCode],
+                 :field_to_compare_value=>g[children_field_to_compare]}
+          children_places.push(child)
         end
     }
 
-    {:children_places=>children_places,:place=>place,:points=>points}
+    {:children_places=>children_places,:points=>points}
   end
 
   private
@@ -67,6 +66,16 @@ class GeoNames
       request = HTTPI::Request.new(url)
       data = HTTPI.get(request)
       JSON.parse(data.body,:symbolize_names=>true)[:geonames]
+    end
+  end
+
+  def calculate_field_to_compare(fcode)
+    case fcode
+      when 'PCLI' then :countryCode
+      when 'ADM1' then :adminCode1
+      when 'ADM2' then :adminCode2
+      when 'ADM3' then :adminCode3
+      else nil
     end
   end
 end

@@ -14,7 +14,7 @@ class Terragona
 
     names.map{|n|
       name= geonames.search_in_place(
-          n[:place],n[:name],n[:fcode], n[:children_fcode],n[:country],n[:field_to_compare])
+          n[:name],n[:fcode],n[:children_fcode],n[:country],n[:field_to_compare],n[:field_to_compare_value])
 
       if name[:points].count < @minimal_polygon_points
         puts "No points for #{n[:name]}"

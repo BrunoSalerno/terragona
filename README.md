@@ -38,18 +38,18 @@ create_polygons_family(<array of places>, <first order geometries table name>, <
 Each place in the array of places is a hash with this keys:
 
 ```
-:place               (optional) A hash containing :name, :id and :adminCode1 or :adminCode2 or :adminCode3
-:name                Obligatory if no place is passed
+:name                
 :fcode               
-:children_fcode      (optional)
-:country             (optional)
-:field_to_compare    (optional)
+:children_fcode          (optional)
+:country                 (optional)
+:field_to_compare        (optional) (:adminCode1, :adminCode2 or :adminCode3)
+:field_to_compare_value  (optional)
 ```
 
 The methods create the tables, fill them with the polygons and return the following hash:
 
 ```
-{:children_places=>array of hashes, :place=>hash, :points=>array of points([x,y])}
+{:children_places=>array of hashes, :points=>array of points([x,y])}
 ```
 
 Options
