@@ -55,16 +55,17 @@ The methods create the tables, fill them with the polygons and return the follow
 Options
 ------
 ```
-default_country        Default country for geonames queries.
-geonames_username      Geonames API username.
-cache_expiration_time  Default: 7200.
-projection             Default: EPSG 4326 (WGS84).
-target_percent         Require to draw the concave polygons. Default: 0.8. 
-                       See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html)
-allow_holes            Can the polygons have holes? Default: yes. 
-                       See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html)
-max_distance_ratio     Points distant more than this ratio times than the average distance between points 
-                       are not considered for drawing the polygons. Default: 1.6.
+default_country         Default country for geonames queries.
+geonames_username       Geonames API username.
+cache_expiration_time   Default: 7200.
+projection              Default: EPSG 4326 (WGS84).
+target_percent          Require to draw the concave polygons. Default: 0.8. 
+                        See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html)
+allow_holes             Can the polygons have holes? Default: yes. 
+                        See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html)
+max_distance_ratio      Points distant more than this ratio times than the average distance between points 
+                        are not considered for drawing the polygons. Default: 1.6.
+minimal_polygon_points  Minimal number of points to build a polygon.
 ```
 
 Postgres options
