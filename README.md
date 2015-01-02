@@ -89,6 +89,13 @@ db_port                Default: 5432.
 db_max_connections     Default: 10.
 ```
 
+TODO
+----
+- [x] Check of geometry type before saving
+- [ ] Use dumps as input (not only API)
+- [ ] Generate multipolygon in ConcaveHull
+- [ ] Improve/replace distant points algorithm
+  
 Useful data
 -----------
 * [GeoNames Country Codes](http://www.geonames.org/countries/)

@@ -21,8 +21,9 @@ class Terragona
       end
 
       unless opts[:dont_create_polygons]
-        concave_hull.perform(name[:points],name[:place_name],name[:place_id])
-        puts "Polygon created for #{n[:name]}"
+        if concave_hull.perform(name[:points],name[:place_name],name[:place_id])
+          puts "Polygon created for #{n[:name]}"
+        end
       end
       name
     }

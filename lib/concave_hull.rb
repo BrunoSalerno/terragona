@@ -51,6 +51,7 @@ class ConcaveHull
   end
 
   def create_concave_hull(query, tags, count, id)
+    return unless @db["SELECT ST_GeometryType(#{query})"].first[:st_geometrytype] == 'ST_Polygon'
     @db << "INSERT INTO #{@table} (id, name, count, geometry) VALUES (#{id},'#{clean_str tags}',#{count},#{query})"
   end
 
