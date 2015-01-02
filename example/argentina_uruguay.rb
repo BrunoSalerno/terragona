@@ -13,8 +13,8 @@ opts={
     :db_name=>'geotags'
 }
 
-paises=[{:name=>'Argentina',:fcode=>'PCLI'},
+countries=[{:name=>'Argentina',:fcode=>'PCLI'},
         {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
 terragona = Terragona.new(opts)
-terragona.create_polygons_family(paises, 'pcli', 'adm1')
+terragona.create_polygons_family(countries, 'countries', 'countries_subdivisions')

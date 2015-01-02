@@ -23,11 +23,11 @@ Usage
 require 'terragona'
 
 opts = {...}
-paises=[{:name=>'Argentina',:fcode=>'PCLI'},
-        {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
+countries=[{:name=>'Argentina',:fcode=>'PCLI',:country=>'AR'},
+           {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
 terragona = Terragona.new(opts)
-terragona.create_polygons_family(paises, 'pcli', 'adm1')
+terragona.create_polygons_family(countries, 'countries', 'countries_subdivisions')
 
 ```
 
