@@ -42,7 +42,8 @@ Each place in the array of places is a hash with this keys:
 
 ```
 :name                
-:fcode               
+:fcode
+:id                      (optional)               
 :children_fcode          (optional)
 :country                 (optional)
 :field_to_compare        (optional) (:adminCode1, :adminCode2 or :adminCode3)
@@ -52,7 +53,7 @@ Each place in the array of places is a hash with this keys:
 The methods create the tables, fill them with polygons and return the following hash:
 
 ```
-{:children_places=>array of hashes, :points=>array of points([x,y])}
+{:children_places=>array of hashes, :points=>array of points([x,y]), :place_name=>string, :place_id=>string}
 ```
 
 Options

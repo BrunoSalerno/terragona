@@ -13,8 +13,7 @@ class Terragona
     concave_hull = ConcaveHull.new(opts) if not opts[:dont_create_polygons]
 
     names.map{|n|
-      name= geonames.search_in_place(
-          n[:name],n[:fcode],n[:children_fcode],n[:country],n[:field_to_compare],n[:field_to_compare_value])
+      name = geonames.search_in_place(n)
 
       if name[:points].count < @minimal_polygon_points
         puts "No points for #{n[:name]}"
@@ -22,7 +21,7 @@ class Terragona
       end
 
       unless opts[:dont_create_polygons]
-        concave_hull.perform(name[:points],n[:name])
+        concave_hull.perform(name[:points],name[:place_name],name[:place_id])
         puts "Polygon created for #{n[:name]}"
       end
       name

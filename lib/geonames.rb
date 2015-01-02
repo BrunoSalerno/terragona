@@ -13,13 +13,13 @@ class GeoNames
     @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
   end
 
-  def search_in_place(name,fcode,children_fcode,country,field_to_compare,field_to_compare_value)
-    country ||= @default_country
+  def search_in_place(options)
+    country = options[:country] || @default_country
+    id = options[:id]
+    name = options[:name]
+    fcode = options[:fcode]
 
-    points = []
-    children_places = []
-
-    children_fcode ||= case fcode
+    children_fcode = options[:children_fcode] || case fcode
                          when 'PCLI' then 'ADM1'
                          when 'ADM1' then 'ADM2'
                          when 'ADM2' then 'ADM3'
@@ -28,20 +28,24 @@ class GeoNames
                          when 'PPLC' then 'PPLX'
                        end
 
-    field_to_compare ||= calculate_field_to_compare(fcode)
+    field_to_compare = options[:field_to_compare] || calculate_field_to_compare(fcode)
     children_field_to_compare = calculate_field_to_compare(children_fcode)
+    field_to_compare_value = options[:field_to_compare_value]
 
     if field_to_compare_value.nil?
       fetch_geonames(name,country,nil,nil).each{|g|
         if g[:fcode]==fcode
           name = g[:name]
+          id = g[:geonameId]
           field_to_compare_value = g[field_to_compare]
           break
         end
       }
     end
 
-    # Lookup for children and points
+    points = []
+    children_places = []
+
     fetch_geonames(name,country,field_to_compare.to_s,field_to_compare_value).each{|g|
         points.push({:lon=>g[:lng],:lat=>g[:lat]})
         if g[:fcode] == children_fcode and children_field_to_compare
@@ -54,7 +58,7 @@ class GeoNames
         end
     }
 
-    {:children_places=>children_places,:points=>points}
+    {:children_places=>children_places,:points=>points,:place_name=>name,:place_id=>id}
   end
 
   private

@@ -24,7 +24,7 @@ class ConcaveHull
     create_table
   end
 
-  def perform(points,tags)
+  def perform(points,tags,id)
     filtered_points=filter_points_by_distance(points)
     points_stringified=stringify_points(filtered_points)
 
@@ -40,18 +40,18 @@ class ConcaveHull
       #{@allow_holes})
     }
 
-    create_concave_hull(query,tags,filtered_points.count)
+    create_concave_hull(query,tags,filtered_points.count,id)
   end
 
   private
   def create_table
     @db << "DROP TABLE IF EXISTS #{@table};"
-    @db << "CREATE TABLE #{@table} (id SERIAL PRIMARY KEY, tags TEXT, count INT);"
+    @db << "CREATE TABLE #{@table} (id BIGINT PRIMARY KEY, name TEXT, count INT);"
     @db << "SELECT AddGeometryColumn('#{@table}', 'geometry',#{@projection}, 'POLYGON', 2);"
   end
 
-  def create_concave_hull(query, tags, count)
-    @db << "INSERT INTO #{@table} (tags, count, geometry) VALUES ('#{clean_str tags}',#{count},#{query})"
+  def create_concave_hull(query, tags, count, id)
+    @db << "INSERT INTO #{@table} (id, name, count, geometry) VALUES (#{id},'#{clean_str tags}',#{count},#{query})"
   end
 
   def filter_points_by_distance(points)
