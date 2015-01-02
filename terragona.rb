@@ -10,7 +10,7 @@ class Terragona
   def create_polygons(names,options={})
     opts=@options.merge(options)
     geonames = GeoNames.new(opts)
-    concave_hull = ConcaveHull.new(opts)
+    concave_hull = ConcaveHull.new(opts) if not opts[:dont_create_polygons]
 
     names.map{|n|
       name= geonames.search_in_place(
@@ -21,8 +21,10 @@ class Terragona
         next
       end
 
-      concave_hull.perform(name[:points],n[:name])
-      puts "Polygon created for #{n[:name]}"
+      unless opts[:dont_create_polygons]
+        concave_hull.perform(name[:points],n[:name])
+        puts "Polygon created for #{n[:name]}"
+      end
       name
     }
   end
@@ -31,7 +33,7 @@ class Terragona
   # Create polygons for parent and children
   #
   def create_polygons_family(names,parents_table,children_table,opts={})
-    created_names = create_polygons(names,:table => parents_table)
+    created_names = create_polygons(names,opts.merge({:table => parents_table}))
     children = []
     created_names.each {|c|
       children.concat(c[:children_places])
