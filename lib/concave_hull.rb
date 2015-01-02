@@ -7,7 +7,7 @@ class ConcaveHull
     @table  = options[:table] || 'concave_hull'
     @target_percent = options[:target_percent] || 0.8
     @allow_holes = options[:allow_holes]
-    @allow_holes = true if @allow_holes.nil?
+    @allow_holes = false if @allow_holes.nil?
     @max_distance_ratio = options[:max_distance_ratio] || 1.6
 
     db_options={

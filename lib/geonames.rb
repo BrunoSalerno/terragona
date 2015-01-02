@@ -64,9 +64,10 @@ class GeoNames
   private
   def fetch_geonames(name,country,admin_code_type,admin_code)
     admin_code_str = admin_code ? "&#{admin_code_type}=#{admin_code}" : ''
+    name_str = name ? "q=#{name}&" : ''
 
     @cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full") do
-      url = URI.escape("#{URL}?q=#{name}&country=#{country}#{admin_code_str}&style=FULL&order_by=relevance&maxRows=1000&username=#{@username}")
+      url = URI.escape("#{URL}?#{name_str}country=#{country}#{admin_code_str}&style=FULL&order_by=relevance&maxRows=1000&username=#{@username}")
       request = HTTPI::Request.new(url)
       data = HTTPI.get(request)
       JSON.parse(data.body,:symbolize_names=>true)[:geonames]

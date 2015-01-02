@@ -66,7 +66,7 @@ cache_expiration_time   Default: 7200.
 projection              Default: EPSG 4326 (WGS84).
 target_percent          Require to draw the concave polygons. 
                         Closer to 1: convex. Closer to 0, concave. Default: 0.8. 
-allow_holes             Can the polygons have holes? Default: yes. 
+allow_holes             Can the polygons have holes? Default: false. 
 max_distance_ratio      Points distant more than this ratio times from the average 
                         distance between points are not considered. Default: 1.6.
 minimal_polygon_points  Minimal number of points to build a polygon.
