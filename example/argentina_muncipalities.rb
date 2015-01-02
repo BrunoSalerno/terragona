@@ -28,5 +28,5 @@ provincias=[{:name=>'Buenos Aires F.D.',:fcode=>'ADM1',:children_fcode=>'PPLX'},
             {:name=>'Neuquén', :fcode=>'ADM1'},
             {:name=>'Río Negro',:fcode=>'ADM1'}]
 
-terragona = Terragona.new(opts)
+terragona = Terragona::Base.new(opts)
 terragona.create_polygons_family(provincias, 'provincias', 'municipios')

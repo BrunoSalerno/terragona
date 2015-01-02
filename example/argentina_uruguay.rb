@@ -7,6 +7,7 @@ opts={
     :default_country=>'AR',
     :geonames_username=>'brunosalerno',
     :allow_holes=>false,
+    :max_distance_ratio=>1.5,
     :target_percent=>0.75,
     :db_username=>'bruno',
     :db_password=>'bruno',
@@ -16,5 +17,5 @@ opts={
 countries=[{:name=>'Argentina',:fcode=>'PCLI'},
         {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
-terragona = Terragona.new(opts)
+terragona = Terragona::Base.new(opts)
 terragona.create_polygons_family(countries, 'countries', 'countries_subdivisions')

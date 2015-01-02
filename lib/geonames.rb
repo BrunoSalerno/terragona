@@ -3,99 +3,109 @@ require 'diskcached'
 require 'similar_text'
 require 'json'
 
-module GeoNames
-  class API < Base
-    def initialize(args = {})
-      @username = args[:geonames_username]
-      cache_expiration_time = args[:cache_expiration_time] || 7200
-      @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
-    end
+module Terragona
+	module GeoNames
+		class Base
+			URL='http://api.geonames.org/searchJSON'
 
-    def fetch_geonames(name,country,admin_code_type,admin_code)
-      admin_code_str = admin_code ? "&#{admin_code_type}=#{admin_code}" : ''
-      name_str = name ? "q=#{name}&" : ''
+			def initialize(args = {})
+				@default_country = args[:default_country]
+			end
 
-      @cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full") do
-        url = URI.escape("#{URL}?#{name_str}country=#{country}#{admin_code_str}&style=FULL&order_by=relevance&maxRows=1000&username=#{@username}")
-        request = HTTPI::Request.new(url)
-        data = HTTPI.get(request)
-        JSON.parse(data.body,:symbolize_names=>true)[:geonames]
-      end
-    end
-  end
+			def search(options)
+				country = options[:country] || @default_country
+				id = options[:id]
+				name = options[:name]
+				fcode = options[:fcode]
 
-  class Dump
-    def initialize(args = {})
-      @file = args[:dump]
-    end
-  end
+				children_fcode = options[:children_fcode] || case fcode
+														 when 'PCLI' then 'ADM1'
+														 when 'ADM1' then 'ADM2'
+														 when 'ADM2' then 'ADM3'
+														 when 'ADM3' then 'ADM4'
+														 when 'ADM4' then 'ADM5'
+														 when 'PPLC' then 'PPLX'
+													 end
 
-  class Base
-    URL='http://api.geonames.org/searchJSON'
+				field_to_compare = options[:field_to_compare] || calculate_field_to_compare(fcode)
+				children_field_to_compare = calculate_field_to_compare(children_fcode)
+				field_to_compare_value = options[:field_to_compare_value]
 
-    def initialize(args = {})
-      @default_country = args[:default_country]
-    end
+				if field_to_compare_value.nil?
+					fetch_geonames(name,country,nil,nil).each{|g|
+						if g[:fcode]==fcode
+							name = g[:name]
+							id = g[:geonameId]
+							field_to_compare_value = g[field_to_compare]
+							break
+						end
+					}
+				end
 
-    def search(options)
-      country = options[:country] || @default_country
-      id = options[:id]
-      name = options[:name]
-      fcode = options[:fcode]
+				points = []
+				children_places = []
 
-      children_fcode = options[:children_fcode] || case fcode
-                           when 'PCLI' then 'ADM1'
-                           when 'ADM1' then 'ADM2'
-                           when 'ADM2' then 'ADM3'
-                           when 'ADM3' then 'ADM4'
-                           when 'ADM4' then 'ADM5'
-                           when 'PPLC' then 'PPLX'
-                         end
+				fetch_geonames(name,country,field_to_compare.to_s,field_to_compare_value).each{|g|
+						points.push({:lon=>g[:lng],:lat=>g[:lat]})
+						if g[:fcode] == children_fcode and children_field_to_compare
+							child={:name=>g[:name],
+										 :id=>g[:geonameId],
+										 :fcode=>g[:fcode],
+										 :country=>g[:countryCode],
+										 :field_to_compare_value=>g[children_field_to_compare]}
+							children_places.push(child)
+						end
+				}
 
-      field_to_compare = options[:field_to_compare] || calculate_field_to_compare(fcode)
-      children_field_to_compare = calculate_field_to_compare(children_fcode)
-      field_to_compare_value = options[:field_to_compare_value]
+				{:children_places=>children_places,:points=>points,:place_name=>name,:place_id=>id}
+			end
 
-      if field_to_compare_value.nil?
-        fetch_geonames(name,country,nil,nil).each{|g|
-          if g[:fcode]==fcode
-            name = g[:name]
-            id = g[:geonameId]
-            field_to_compare_value = g[field_to_compare]
-            break
-          end
-        }
-      end
+			private
 
-      points = []
-      children_places = []
+			def calculate_field_to_compare(fcode)
+				case fcode
+					when 'PCLI' then :countryCode
+					when 'ADM1' then :adminCode1
+					when 'ADM2' then :adminCode2
+					when 'ADM3' then :adminCode3
+					else nil
+				end
+			end
+		end
 
-      fetch_geonames(name,country,field_to_compare.to_s,field_to_compare_value).each{|g|
-          points.push({:lon=>g[:lng],:lat=>g[:lat]})
-          if g[:fcode] == children_fcode and children_field_to_compare
-            child={:name=>g[:name],
-                   :id=>g[:geonameId],
-                   :fcode=>g[:fcode],
-                   :country=>g[:countryCode],
-                   :field_to_compare_value=>g[children_field_to_compare]}
-            children_places.push(child)
-          end
-      }
+		class API < Base
+			def initialize(args = {})
+				@username = args[:geonames_username]
+				cache_expiration_time = args[:cache_expiration_time] || 7200
+				@cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
+			end
 
-      {:children_places=>children_places,:points=>points,:place_name=>name,:place_id=>id}
-    end
+			def fetch_geonames(name,country,admin_code_type,admin_code)
+				admin_code_str = admin_code ? "&#{admin_code_type}=#{admin_code}" : ''
+				name_str = name ? "q=#{name}&" : ''
 
-    private
+				@cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full") do
+					url = URI.escape(%Q{#{URL}?
+						#{name_str}
+						country=#{country}
+						#{admin_code_str}
+						&style=FULL
+						&order_by=relevance
+						&maxRows=1000
+						&username=#{@username}})
+						
+					request = HTTPI::Request.new(url)
+					data = HTTPI.get(request)
+					JSON.parse(data.body,:symbolize_names=>true)[:geonames]
+				end
+			end
+		end
 
-    def calculate_field_to_compare(fcode)
-      case fcode
-        when 'PCLI' then :countryCode
-        when 'ADM1' then :adminCode1
-        when 'ADM2' then :adminCode2
-        when 'ADM3' then :adminCode3
-        else nil
-      end
-    end
-  end
+		class Dump < Base
+			def initialize(args = {})
+				@file = args[:dump]
+			end
+		end
 
+	end
 end

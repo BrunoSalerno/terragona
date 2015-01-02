@@ -26,7 +26,7 @@ opts = {...}
 countries=[{:name=>'Argentina',:fcode=>'PCLI',:country=>'AR'},
            {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
-terragona = Terragona.new(opts)
+terragona = Terragona::Base.new(opts)
 terragona.create_polygons_family(countries, 'countries', 'countries_subdivisions')
 
 ```

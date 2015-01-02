@@ -15,5 +15,5 @@ opts={
 
 brazil=[{:name=>'Brazil',:fcode=>'PCLI'}]
 
-terragona = Terragona.new(opts)
+terragona = Terragona::Base.new(opts)
 terragona.create_polygons_family(brazil, 'brazil', 'brazil_states')

@@ -15,5 +15,5 @@ opts={
 
 sp=[{:name=>'São Paulo',:fcode=>'ADM1'}]
 
-terragona = Terragona.new(opts)
+terragona = Terragona::Base.new(opts)
 terragona.create_polygons_family(sp, 'sao_paulo', 'sao_paulo_municipalities')

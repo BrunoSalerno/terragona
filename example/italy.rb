@@ -11,7 +11,7 @@ opts={
 
 italy=[{:name=>'Italy',:fcode=>'PCLI'}]
 
-terragona=Terragona.new(opts)
+terragona=Terragona::Base.new(opts)
 result=terragona.create_polygons_family(italy,'italy','italian_regions')
 
 italian_rest=[]
