@@ -7,6 +7,9 @@ See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html).
 
 So, am I saying you can get the geometries of all places magically? Sort of... 
 The results are not *very* accurate. But they are interesting.
+
+![alt tag](https://cloud.githubusercontent.com/assets/6061036/5597006/ae5c2650-9279-11e4-90c5-37f232b9b153.png)
+Argentina and Uruguay political divisions.
   
 Install
 -------
@@ -20,10 +23,11 @@ Usage
 require 'terragona'
 
 opts = {...}
-sp = [{:name=>'São Paulo',:fcode=>'ADM1'}]
+paises=[{:name=>'Argentina',:fcode=>'PCLI'},
+        {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
 terragona = Terragona.new(opts)
-terragona.create_polygons_family(sp, 'sao_paulo_state', 'sao_paulo_municipalities')
+terragona.create_polygons_family(paises, 'pcli', 'adm1')
 
 ```
 
