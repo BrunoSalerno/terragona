@@ -1,7 +1,7 @@
 terragona
 =========
 
-Create polygons for [geonames](www.geonames.org) places.
+Create polygons for [GeoNames](www.geonames.org) places.
 This means: Create concave polygons using geonames places and store them in a postgres/postgis database.
 See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html).
 
@@ -42,7 +42,7 @@ Each place in the array of places is a hash with this keys:
 
 ```
 :name                
-:fcode
+:fcode                   GeoNames Feature Code 
 :id                      (optional)               
 :children_fcode          (optional)
 :country                 (optional)
@@ -84,6 +84,11 @@ db_host                Default: localhost.
 db_port                Default: 5432.
 db_max_connections     Default: 10.
 ```
+
+Useful data
+-----------
+* [GeoNames Country Codes](http://www.geonames.org/countries/)
+* [GeoNames Feature Codes](http://www.geonames.org/export/codes.html)
 
 License
 -------
