@@ -9,11 +9,16 @@ class Terragona
 
   def create_polygons(names,options={})
     opts=@options.merge(options)
-    geonames = GeoNames.new(opts)
+    if opts[:dump]
+      geonames = GeoNames::Dump.new(opts)
+    else
+      geonames = GeoNames::API.new(opts)
+    end
+
     concave_hull = ConcaveHull.new(opts) if not opts[:dont_create_polygons]
 
     names.map{|n|
-      name = geonames.search_in_place(n)
+      name = geonames.search(n)
 
       if name[:points].count < @minimal_polygon_points
         puts "No points for #{n[:name]}"
