@@ -1,2 +1,2 @@
-require 'terragona/base'
+require './terragona/base'
 

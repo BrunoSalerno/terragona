@@ -1,6 +1,6 @@
-require 'geonames'
-require 'concave_hull'
-require 'version'
+require './geonames'
+require './concave_hull'
+require './version'
 
 module Terragona
   class Base
