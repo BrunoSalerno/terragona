@@ -20,12 +20,14 @@ git clone this repository
 Usage
 -----
 
-You can use directly the GeoNames API, with the Terragona::API class, or download
+First, create a db in postgres and install the postgis extension.
+
+You can use the GeoNames API, with the Terragona::API class, or download
 a dump, (Terragona::Dump class) and specify the dump file path in opts. The API is faster 
 but less accurate (max 1000 points per request). The dump is more accurate but much slower (please, 
 use country dumps, not the world dump: it's to big -~9 million points- and could take lots of time.). For example:
-with the API, the Italy polygon is draw using 1000 points. With the dump, the input is ~95.000 points. 
-Of course, you can use the `max_points` option to limit this number.
+with the API, the Italy polygon is drawn using 1000 points. With the dump, the input is ~95.000 points. 
+You can use the `max_points` option to limit this number.
 
 The slow part of the process is when points are filtered: the ones that are isolated are discarded. 
 This has to be refactored.
@@ -58,8 +60,8 @@ opts={
 	:max_distance_ratio=>1.6,
 	:db_username=>'mydbuser',
 	:db_password=>'mydbpsswd',
-	:db_name=>'mudb',
-  :dump=>'/path/to/dump/IT.txt'}
+	:db_name=>'mydb',
+	:dump=>'/path/to/dump/IT.txt'}
 
 italy=[{:name=>'Italy',:fcode=>'PCLI'}]
 
@@ -72,8 +74,6 @@ result.each {|r|
 }
 terragona.create_polygons_family(italian_rest,'province','comuni')
 ```
-
-See the example folder.
 
 Methods
 -------

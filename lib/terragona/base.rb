@@ -1,8 +1,7 @@
-require './lib/geonames'
-require './lib/concave_hull'
+require 'geonames'
+require 'concave_hull'
+require 'version'
 
-# Renombrar este archivo a base.rb, moverlo a lib/terragona junto con los demás archivos que están en lib.
-# En lib a secas queda sólo un terragona.rb que hace require 'terragona/base'. 
 module Terragona
   class Base
     def initialize(options={})
