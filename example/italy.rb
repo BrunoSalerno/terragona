@@ -2,7 +2,6 @@ require_relative('../terragona')
 
 opts={
 	:default_country=>'IT',
-	:geonames_username=>'brunosalerno',
 	:target_percent=> 0.85,
 	:max_distance_ratio=>1.6,
 	:db_username=>'bruno',

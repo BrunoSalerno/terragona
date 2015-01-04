@@ -21,7 +21,7 @@ Usage
 -----
 
 You can use directly the GeoNames API, with the Terragona::API class, or download
-a dump, (Terragona::Dump class) and specifying the dump file path in opts. The API is faster 
+a dump, (Terragona::Dump class) and specify the dump file path in opts. The API is faster 
 but less accurate (max 1000 points per request). The dump is more accurate but much slower (please, 
 use country dumps, not the world dump: it's to big -~9 million points- and could take lots of time.). For example:
 with the API, the Italy polygon is draw using 1000 points. With the dump, the input is ~95.000 points. 
@@ -31,7 +31,7 @@ The slow part of the process is when points are filtered: the ones that are isol
 This has to be refactored.
 
 Besides the source of the points, options `target_percent` and `max_distance_ratio` control the shape of
-the polygons. See options. 
+the polygons. See the options. 
 
 
 With API
@@ -54,7 +54,6 @@ require 'terragona'
 
 opts={
 	:default_country=>'IT',
-	:geonames_username=>'myusernmae',
 	:target_percent=> 0.85,
 	:max_distance_ratio=>1.6,
 	:db_username=>'mydbuser',
@@ -110,8 +109,8 @@ Options
 dump                    Only for Dump. Path to dump file.
 max_points              Only for Dump. Max number of points to consider from
                         dump file.            
-default_country         Default country for geonames queries.
-geonames_username       Geonames API username.
+default_country         Default country.
+geonames_username       Only for API. Geonames API username.
 cache_expiration_time   Default: 7200.
 projection              Default: EPSG 4326 (WGS84).
 target_percent          Require to draw the concave polygons. 
