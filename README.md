@@ -15,7 +15,9 @@ As you can see, the results are not *very* accurate. But they are interesting.
 Install
 -------
 
-git clone this repository
+`gem install terragona`
+
+or add `gem 'terragona'` to your Gemfile
 
 Usage
 -----
