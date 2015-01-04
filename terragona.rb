@@ -1,6 +1,8 @@
-require_relative './lib/geonames'
-require_relative './lib/concave_hull'
+require './lib/geonames'
+require './lib/concave_hull'
 
+# Renombrar este archivo a base.rb, moverlo a lib/terragona junto con los demás archivos que están en lib.
+# En lib a secas queda sólo un terragona.rb que hace require 'terragona/base'. 
 module Terragona
   class Base
     def initialize(options={})
@@ -10,16 +12,11 @@ module Terragona
 
     def create_polygons(names,options={})
       opts=@options.merge(options)
-      if opts[:dump]
-        geonames = GeoNames::Dump.new(opts)
-      else
-        geonames = GeoNames::API.new(opts)
-      end
 
       concave_hull = ConcaveHull.new(opts) if not opts[:dont_create_polygons]
 
       names.map{|n|
-        name = geonames.search(n)
+        name = @geonames.search(n)
 
         if name[:points].count < @minimal_polygon_points
           puts "No points for #{n[:name]}"
@@ -35,9 +32,6 @@ module Terragona
       }
     end
 
-    #
-    # Create polygons for parent and children
-    #
     def create_polygons_family(names,parents_table,children_table,opts={})
       created_names = create_polygons(names,opts.merge({:table => parents_table}))
       children = []
@@ -47,4 +41,19 @@ module Terragona
       create_polygons(children,opts.merge({:table => children_table}))
     end
   end
+  
+  class API < Base
+    def initialize (options={})
+      super
+      @geonames = GeoNames::API.new(options) 
+    end
+  end
+  
+  class Dump < Base
+    def initialize (options={})
+      super
+      @geonames = GeoNames::Dump.new(options) 
+    end
+  end
+  
 end

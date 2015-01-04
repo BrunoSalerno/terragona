@@ -5,11 +5,12 @@ Create polygons for [GeoNames](www.geonames.org) places.
 This means: Create concave polygons using geonames places and store them in a postgres/postgis database.
 See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html).
 
-So, am I saying you can get the geometries of all places magically? Sort of... 
-The results are not *very* accurate. But they are interesting.
+![alt tag](https://cloud.githubusercontent.com/assets/6061036/5606205/2216ff3c-9402-11e4-9123-fff91369208e.png)
 
-![alt tag](https://cloud.githubusercontent.com/assets/6061036/5597006/ae5c2650-9279-11e4-90c5-37f232b9b153.png)
-Argentina and Uruguay political divisions.
+
+So, am I saying you can get the geometries of all places magically? Sort of... 
+As you can see, the results are not *very* accurate. But they are interesting.
+
   
 Install
 -------
@@ -19,16 +20,58 @@ git clone this repository
 Usage
 -----
 
-```
+You can use directly the GeoNames API, with the Terragona::API class, or download
+a dump, (Terragona::Dump class) and specifying the dump file path in opts. The API is faster 
+but less accurate (max 1000 points per request). The dump is more accurate but much slower (please, 
+use country dumps, not the world dump: it's to big -~9 million points- and could take lots of time.). For example:
+with the API, the Italy polygon is draw using 1000 points. With the dump, the input is ~95.000 points. 
+Of course, you can use the `max_points` option to limit this number.
+
+The slow part of the process is when points are filtered: the ones that are isolated are discarded. 
+This has to be refactored.
+
+Besides the source of the points, options `target_percent` and `max_distance_ratio` control the shape of
+the polygons. See options. 
+
+
+With API
+```ruby
 require 'terragona'
 
 opts = {...}
 countries=[{:name=>'Argentina',:fcode=>'PCLI',:country=>'AR'},
            {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
-terragona = Terragona::Base.new(opts)
+terragona = Terragona::API.new(opts)
 terragona.create_polygons_family(countries, 'countries', 'countries_subdivisions')
 
+```
+
+With Dump, and using returned children places
+
+```ruby
+require 'terragona'
+
+opts={
+	:default_country=>'IT',
+	:geonames_username=>'myusernmae',
+	:target_percent=> 0.85,
+	:max_distance_ratio=>1.6,
+	:db_username=>'mydbuser',
+	:db_password=>'mydbpsswd',
+	:db_name=>'mudb',
+  :dump=>'/path/to/dump/IT.txt'}
+
+italy=[{:name=>'Italy',:fcode=>'PCLI'}]
+
+terragona=Terragona::Dump.new(opts)
+result=terragona.create_polygons_family(italy,'italy','italian_regions')
+
+italian_rest=[]
+result.each {|r|
+	italian_rest.concat(r[:children_places])
+}
+terragona.create_polygons_family(italian_rest,'province','comuni')
 ```
 
 See the example folder.
@@ -64,6 +107,9 @@ Options
 ------
 
 ```
+dump                    Only for Dump. Path to dump file.
+max_points              Only for Dump. Max number of points to consider from
+                        dump file.            
 default_country         Default country for geonames queries.
 geonames_username       Geonames API username.
 cache_expiration_time   Default: 7200.
@@ -92,14 +138,15 @@ db_max_connections     Default: 10.
 TODO
 ----
 - [x] Check of geometry type before saving
-- [ ] Use dumps as input (not only API)
-- [ ] Generate multipolygon in ConcaveHull
-- [ ] Improve/replace distant points algorithm
+- [x] Use dumps as input (not only API)
+- [ ] Generate multipolygon in ConcaveHull. Use some clustering algorithm.
+- [ ] Improve/replace distant points algorithm. Use some clustering algorithm.
   
 Useful data
 -----------
 * [GeoNames Country Codes](http://www.geonames.org/countries/)
 * [GeoNames Feature Codes](http://www.geonames.org/export/codes.html)
+* [GeoNames Dumps download page](http://download.geonames.org/export/dump/)
 
 License
 -------

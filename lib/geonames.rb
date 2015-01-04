@@ -2,12 +2,11 @@ require 'httpi'
 require 'diskcached'
 require 'similar_text'
 require 'json'
+require 'csv'
 
 module Terragona
   module GeoNames
     class Base
-      URL='http://api.geonames.org/searchJSON'
-
       def initialize(args = {})
         @default_country = args[:default_country]
       end
@@ -33,7 +32,7 @@ module Terragona
 
         if field_to_compare_value.nil?
           fetch_geonames(name,country,nil,nil).each{|g|
-            if g[:fcode]==fcode
+            if g[:fcode] == fcode
               name = g[:name]
               id = g[:geonameId]
               field_to_compare_value = g[field_to_compare]
@@ -44,9 +43,9 @@ module Terragona
 
         points = []
         children_places = []
-
-        fetch_geonames(name,country,field_to_compare.to_s,field_to_compare_value).each{|g|
-            points.push({:lon=>g[:lng],:lat=>g[:lat]})
+                        
+        fetch_geonames(nil,country,field_to_compare,field_to_compare_value).each{|g|
+            points.push({:x=>g[:lng],:y=>g[:lat]})
             if g[:fcode] == children_fcode and children_field_to_compare
               child={:name=>g[:name],
                      :id=>g[:geonameId],
@@ -74,7 +73,9 @@ module Terragona
     end
 
     class API < Base
+      URL = 'http://api.geonames.org/searchJSON'
       def initialize(args = {})
+        super
         @username = args[:geonames_username]
         cache_expiration_time = args[:cache_expiration_time] || 7200
         @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
@@ -84,26 +85,100 @@ module Terragona
         admin_code_str = admin_code ? "&#{admin_code_type}=#{admin_code}" : ''
         name_str = name ? "q=#{name}&" : ''
 
-        @cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full") do
-          url = URI.escape(%Q{#{URL}?
-            #{name_str}
-            country=#{country}
-            #{admin_code_str}
-            &style=FULL
-            &order_by=relevance
-            &maxRows=1000
-            &username=#{@username}})
-            
+        @cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full666") do
+          url = URI.escape(%Q{#{URL}?#{name_str}country=#{country}#{admin_code_str}&style=FULL&order_by=relevance&maxRows=1000&username=#{@username}})
           request = HTTPI::Request.new(url)
           data = HTTPI.get(request)
           JSON.parse(data.body,:symbolize_names=>true)[:geonames]
         end
+        
       end
     end
 
     class Dump < Base
+      HEADERS = [:geonameId, 
+                 :name, 
+                 :asciiname, 
+                 :alternatenames, 
+                 :lat,
+                 :lng,
+                 :fclass,
+                 :fcode,
+                 :countryCode,
+                 :cc2,
+                 :adminCode1,
+                 :adminCode2,
+                 :adminCode3,
+                 :adminCode4,
+                 :population,
+                 :elevation,
+                 :dem,
+                 :timezone,
+                 :modificaion_date]
+                 
       def initialize(args = {})
-        @file = args[:dump]
+        super
+        
+        if not args[:dump]
+          puts 'No dump file provided'
+          return
+        end
+        @file = File.open(args[:dump])
+        @admin_codes_cache = {:adminCode1=>{},
+                              :adminCode2=>{},
+                              :adminCode3=>{},
+                              :adminCode4=>{}}
+                              
+        @max_points = args[:max_points]                    
+      end
+      
+      def fetch_geonames(name, country, admin_code_type, admin_code)
+        if admin_code_type and 
+           @admin_codes_cache[admin_code_type] and 
+           @admin_codes_cache[admin_code_type][admin_code]
+        
+          @admin_codes_cache[admin_code_type][admin_code]
+           
+        else
+          dump_parser(name, country, admin_code_type, admin_code)
+        end
+      end
+      
+      private
+      def dump_parser(name, country, admin_code_type, admin_code)
+        @file.rewind
+        records = @max_points ? @file.first(@max_points) : @file
+        records.map {|l| 
+          begin
+            raw=CSV.parse_line(l,{:col_sep => "\t"})            
+          rescue
+            next
+          end
+
+          hash = {}
+          HEADERS.each_with_index {|h,index| hash[h] = raw[index]}
+          
+          cache_hash(hash)
+          
+          next unless (name and name.similar(hash[:name]) > 30) or
+                      (name and hash[:alternatenames] and hash[:alternatenames].include? name) or                       
+                      (admin_code_type and admin_code and hash[admin_code_type] == admin_code)
+          
+          next if (country and country != hash[:countryCode]) 
+          
+          hash  
+        }.compact
+      end
+      
+      def cache_hash(hash)
+        [:adminCode1,:adminCode2,:adminCode3,:adminCode4].each {|adm|
+          if hash[adm] and not @admin_codes_cache[adm][hash[adm]]
+            @admin_codes_cache[adm][hash[adm]]=[]
+          end
+          if hash[adm] and not @admin_codes_cache[adm][hash[adm]].include? hash
+            @admin_codes_cache[adm][hash[adm]].push(hash)
+          end
+        }
       end
     end
 

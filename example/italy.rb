@@ -7,11 +7,12 @@ opts={
 	:max_distance_ratio=>1.6,
 	:db_username=>'bruno',
 	:db_password=>'bruno',
-	:db_name=>'geotags'}
+	:db_name=>'geotags',
+  :dump=>'/home/bruno/Documentos/terragona/IT/IT.txt'}
 
 italy=[{:name=>'Italy',:fcode=>'PCLI'}]
 
-terragona=Terragona::Base.new(opts)
+terragona=Terragona::Dump.new(opts)
 result=terragona.create_polygons_family(italy,'italy','italian_regions')
 
 italian_rest=[]
@@ -19,5 +20,3 @@ result.each {|r|
 	italian_rest.concat(r[:children_places])
 }
 terragona.create_polygons_family(italian_rest,'province','comuni')
-
-require 'pry';binding.pry

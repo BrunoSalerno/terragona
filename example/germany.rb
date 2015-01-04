@@ -12,6 +12,6 @@ opts={
 
 germany=[{:name=>'Germany',:fcode=>'PCLI'}]
 
-terragona = Terragona::Base.new(opts)
+terragona = Terragona::API.new(opts)
 result=terragona.create_polygons_family(germany, 'germany', 'germany_states')
 terragona.create_polygons(result[1][:children_places],:table=>'bavaria')
