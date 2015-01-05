@@ -1,7 +1,7 @@
 terragona
 =========
 
-Create polygons for [GeoNames](www.geonames.org) places.
+Create polygons for [GeoNames](http://www.geonames.org) places.
 This means: Create concave polygons using geonames places and store them in a postgres/postgis database.
 See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html).
 
