@@ -113,6 +113,7 @@ max_points              Only for Dump. Max number of points to consider from
                         dump file.            
 default_country         Default country.
 geonames_username       Only for API. Geonames API username.
+use_cache               Boolean. Default: false.    
 cache_expiration_time   Default: 7200.
 projection              Default: EPSG 4326 (WGS84).
 target_percent          Require to draw the concave polygons. 

@@ -78,20 +78,28 @@ module Terragona
         super
         @username = args[:geonames_username]
         cache_expiration_time = args[:cache_expiration_time] || 7200
-        @cache=Diskcached.new('/tmp/cache',cache_expiration_time,true)
+        @cache = Diskcached.new('/tmp/cache',cache_expiration_time,true)
+        @use_cache = args[:use_cache]
       end
 
       def fetch_geonames(name,country,admin_code_type,admin_code)
         admin_code_str = admin_code ? "&#{admin_code_type}=#{admin_code}" : ''
         name_str = name ? "q=#{name}&" : ''
 
-        @cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full666") do
-          url = URI.escape(%Q{#{URL}?#{name_str}country=#{country}#{admin_code_str}&style=FULL&order_by=relevance&maxRows=1000&username=#{@username}})
-          request = HTTPI::Request.new(url)
-          data = HTTPI.get(request)
-          JSON.parse(data.body,:symbolize_names=>true)[:geonames]
+        if @use_cache
+          @cache.cache("geonames_name=#{name}&country=#{country}#{admin_code_str}&full666") do
+            request(name_str,country,admin_code_str)
+          end
+        else
+          request(name_str,country,admin_code_str)
         end
-        
+      end
+
+      def request(name_str,country,admin_code_str)
+        url = URI.escape(%Q{#{URL}?#{name_str}country=#{country}#{admin_code_str}&style=FULL&order_by=relevance&maxRows=1000&username=#{@username}})
+        request = HTTPI::Request.new(url)
+        data = HTTPI.get(request)
+        JSON.parse(data.body,:symbolize_names=>true)[:geonames]
       end
     end
 
