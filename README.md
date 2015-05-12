@@ -1,8 +1,8 @@
 terragona
 =========
 
-Create polygons for [GeoNames](http://www.geonames.org) places.
-This means: Create concave polygons using geonames places and store them in a postgres/postgis database.
+Create polygons from [GeoNames](http://www.geonames.org) places or other sources.
+This means: Create concave polygons using, i.e., geonames places and store them in a postgres/postgis database.
 See [ST_Concave_Hull](http://postgis.net/docs/ST_ConcaveHull.html).
 
 ![alt tag](https://cloud.githubusercontent.com/assets/6061036/5606205/2216ff3c-9402-11e4-9123-fff91369208e.png)
@@ -19,17 +19,25 @@ Install
 
 or add `gem 'terragona'` to your Gemfile
 
+News
+----
+
+* Classes API and Dump are now nested inside a `Geonames` class.
+
 Usage
 -----
 
 First, create a db in postgres and install the postgis extension.
 
-You can use the GeoNames API, with the Terragona::API class, or download
-a dump, (Terragona::Dump class) and specify the dump file path in opts. The API is faster 
-but less accurate (max 1000 points per request). The dump is more accurate but much slower (please, 
-use country dumps, not the world dump: it's to big -~9 million points- and could take lots of time.). For example:
-with the API, the Italy polygon is drawn using 1000 points. With the dump, the input is ~95.000 points. 
-You can use the `max_points` option to limit this number.
+Right now, as sources you can use:
+* GeoNames API, with the `Terragona::Geonames::API` class,
+* A Geonames dump, (`Terragona::Geonames::Dump` class) and specify the dump file path in opts. 
+* A CSV (`Terragona::CSVParser` class) (with headers: `name,x,y`)
+
+The API is faster but less accurate than the dump (max 1000 points per request). 
+The dump is more accurate but much slower (please, use country dumps, not the world dump: it's to big 
+-~9 million points- and could take lots of time.). For example: with the API, the Italy polygon is drawn 
+using 1000 points. With the dump, the input is ~95.000 points. You can use the `max_points` option to limit this number.
 
 The slow part of the process is when points are filtered: the ones that are isolated are discarded. 
 This has to be refactored.
@@ -46,13 +54,12 @@ opts = {...}
 countries=[{:name=>'Argentina',:fcode=>'PCLI',:country=>'AR'},
            {:name=>'Uruguay',:fcode=>'PCLI',:country=>'UY'}]
 
-terragona = Terragona::API.new(opts)
+terragona = Terragona::Geonames::API.new(opts)
 terragona.create_polygons_family(countries, 'countries', 'countries_subdivisions')
 
 ```
 
 With Dump, and using returned children places
-
 ```ruby
 require 'terragona'
 
@@ -67,14 +74,34 @@ opts={
 
 italy=[{:name=>'Italy',:fcode=>'PCLI'}]
 
-terragona=Terragona::Dump.new(opts)
-result=terragona.create_polygons_family(italy,'italy','italian_regions')
+terragona = Terragona::Geonames::Dump.new(opts)
+result = terragona.create_polygons_family(italy,'italy','italian_regions')
 
-italian_rest=[]
+italian_rest = []
 result.each {|r|
 	italian_rest.concat(r[:children_places])
 }
 terragona.create_polygons_family(italian_rest,'province','comuni')
+```
+
+With the CSVParser class
+
+```ruby
+require 'terragona'
+
+opts={
+	:target_percent=> 0.85,
+	:max_distance_ratio=>1.6,
+	:db_username=>'mydbuser',
+	:db_password=>'mydbpsswd',
+	:db_name=>'mydb',
+	:csv_filename=>'/path/to/csv/IT.csv'}
+
+italy=[] #Don't need input but the csv.
+
+terragona = Terragona::CSVParser.new(opts)
+terragona.create_polygons_family(italy,'italy','italian_regions')
+
 ```
 
 Methods
@@ -85,6 +112,9 @@ create_polygons(<array of places>, options)
   
 create_polygons_family(<array of places>, <first order geometries table name>, <second order geometries table name>, options)
 ```
+
+Important: **With the CSVParser class the initial array of places is not used**. 
+Terragona tries to create the parent polygon using all points.
 
 Each place in the array of places is a hash with this keys:
 
@@ -110,10 +140,11 @@ Options
 ```
 dump                    Only for Dump. Path to dump file.
 max_points              Only for Dump. Max number of points to consider from
-                        dump file.            
-default_country         Default country.
+                        dump file.
+csv_filename            Only for CSV.
+default_country         Default country. Only for Geonames.
 geonames_username       Only for API. Geonames API username.
-use_cache               Boolean. Default: false.    
+use_cache               Boolean. Default: false.
 cache_expiration_time   Default: 7200.
 projection              Default: EPSG 4326 (WGS84).
 target_percent          Require to draw the concave polygons. 

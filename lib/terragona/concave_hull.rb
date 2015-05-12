@@ -59,10 +59,6 @@ module Terragona
         puts "Error with #{tags}, Id: #{id}, #{count} points."
       end
     end
-    
-    def drop_points_table(table)
-      @db << "DROP TABLE IF EXISTS #{table};"
-    end
 
     def filter_points_by_distance(points)     
       random_points = points.count > 200 ? (0..200).map {|e|
@@ -92,7 +88,7 @@ module Terragona
     end
 
     def clean_str(str)
-      str.gsub("'",' ')
+      str.to_s.gsub("'",' ')
     end
   end
 end
