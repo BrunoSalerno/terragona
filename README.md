@@ -153,6 +153,9 @@ allow_holes             Can the polygons have holes? Default: false.
 max_distance_ratio      Points distant more than this ratio times from the average 
                         distance between points are not considered. Default: 1.6.
 minimal_polygon_points  Minimal number of points to build a polygon.
+force_homogeneity       Uses max_distance_ratio also to compare with the avg distance
+                        between points of all the other polygons of the same family level.
+                        This helps to discard outliers. The result are homogeneous polygons. 
 dont_create_polygons    (boolean) Default: false.
 table                   Table where polygons are saved. This option is overriden 
                         by args of create_polygons_family method.

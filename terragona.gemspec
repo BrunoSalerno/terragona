@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Terragona::VERSION
   spec.authors       = ["Bruno Salerno"]
   spec.email         = ["br.salerno@gmail.com"]
-  spec.description   = %q{Create polygons for geonames places}
-  spec.summary       = %q{Use API or dumps as input, draw polygons, and store them in a Postgres/Postgis db}
+  spec.description   = %q{Create polygons from geonames places and other sources}
+  spec.summary       = %q{Use API, Dumps or a CSV file as input, draw polygons, and store them in a Postgres/Postgis db}
   spec.homepage      = "https://github.com/BrunoSalerno/terragona"
   spec.license       = "MIT"
 

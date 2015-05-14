@@ -1,5 +1,6 @@
 require 'geokit'
 require 'sequel'
+require_relative 'stats'
 
 module Terragona
   class ConcaveHull
@@ -10,6 +11,7 @@ module Terragona
       @allow_holes = options[:allow_holes]
       @allow_holes = false if @allow_holes.nil?
       @max_distance_ratio = options[:max_distance_ratio] || 1.6
+      @force_homogeneity = options[:force_homogeneity]
 
       db_options={
           :database=> options[:db_name],
@@ -21,7 +23,7 @@ module Terragona
       }
 
       @db = Sequel.postgres(db_options)
-
+      @all_means = []
       create_table
     end
 
@@ -45,10 +47,11 @@ module Terragona
     end
     
     private
+
     def create_table
       @db << "DROP TABLE IF EXISTS #{@table};"
       @db << "CREATE TABLE #{@table} (id BIGINT PRIMARY KEY, name TEXT, count INT);"
-      @db << "SELECT AddGeometryColumn('#{@table}', 'geometry',#{@projection}, 'POLYGON', 2);"
+      @db << "SELECT AddGeometryColumn('#{@table}', 'geometry', #{@projection}, 'POLYGON', 2);"
     end
 
     def create_concave_hull(query, tags, count, id)
@@ -60,20 +63,27 @@ module Terragona
       end
     end
 
-    def filter_points_by_distance(points)     
+    def filter_points_by_distance(points)
       random_points = points.count > 200 ? (0..200).map {|e|
         points[rand(points.count)]
       }.uniq : points
-            
+
       distances = points.map {|p0|
         sum = random_points.map {|pf|
-          Geokit::LatLng.new(p0[:y],p0[:x]).distance_to(Geokit::LatLng.new(pf[:y],pf[:x]))
-        }
-        {:y=>p0[:y],:x=>p0[:x],:average=>average(sum)}
+          if p0[:y] != pf[:y] and p0[:x] != pf[:x]
+            Geokit::LatLng.new(p0[:y],p0[:x]).distance_to(Geokit::LatLng.new(pf[:y],pf[:x]))
+          end
+        }.compact
+        {:y=>p0[:y],:x=>p0[:x],:mean=> sum.mean}
       }
-      average_distance=average(distances.map{|d| d[:average]})
+
+      mean = distances.map{|d| d[:mean]}.compact.mean
+      @all_means.push mean
+      mean_of_means =  @force_homogeneity ? @all_means.compact.mean : nil
+
       distances.map {|d|
-        d if d[:average] <= average_distance * @max_distance_ratio
+        next unless d[:mean]
+        d if (d[:mean]/[mean,mean_of_means].compact.min) < @max_distance_ratio
       }.compact
     end
 
@@ -81,10 +91,6 @@ module Terragona
       points.map{|p|
         "#{p[:x]} #{p[:y]}"
       }.join(',')
-    end
-
-    def average(arr)
-      arr.inject{ |sum, el| sum + el }.to_f / arr.size
     end
 
     def clean_str(str)
