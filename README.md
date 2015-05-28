@@ -31,7 +31,8 @@ First, create a db in postgres and install the postgis extension.
 
 Right now, as sources you can use:
 * GeoNames API, with the `Terragona::Geonames::API` class,
-* A Geonames dump, (`Terragona::Geonames::Dump` class) and specify the dump file path in opts. 
+* A Geonames dump, (`Terragona::Geonames::Dump` class) and specify the dump file path in opts.
+* A hash (actually an array of hashes) (`Terragona::Geonames::FromHash` class)
 * A CSV (`Terragona::CSVParser` class) (with headers: `name,x,y`)
 
 The API is faster but less accurate than the dump (max 1000 points per request). 
@@ -84,11 +85,35 @@ result.each {|r|
 terragona.create_polygons_family(italian_rest,'province','comuni')
 ```
 
+With the FromHash class
+
+```ruby
+require 'terragona'
+
+my_hash = [{:name=>'some_tag',:y=>some_lat,:x=>some_lon},
+           {:name=>'some_tag',:y=>some_lat,:x=>some_lon},
+           ...]
+
+opts={
+	:target_percent=> 0.85,
+	:max_distance_ratio=>1.6,
+	:db_username=>'mydbuser',
+	:db_password=>'mydbpsswd',
+	:db_name=>'mydb',
+	:hash=>my_hash}
+
+italy=[] #Don't need input but the hash option.
+
+terragona = Terragona::FromHash.new(opts)
+terragona.create_polygons_family(italy,'italy','italian_regions')
+```
+
 With the CSVParser class
 
 ```ruby
 require 'terragona'
 
+# csv with headers: name,x,y
 opts={
 	:target_percent=> 0.85,
 	:max_distance_ratio=>1.6,
@@ -137,39 +162,55 @@ The methods create the tables, fill them with polygons and return the following 
 Options
 ------
 
-```
-dump                    Only for Dump. Path to dump file.
-max_points              Only for Dump. Max number of points to consider from
-                        dump file.
-csv_filename            Only for CSV.
-default_country         Default country. Only for Geonames.
-geonames_username       Only for API. Geonames API username.
-use_cache               Boolean. Default: false.
-cache_expiration_time   Default: 7200.
-projection              Default: EPSG 4326 (WGS84).
-target_percent          Require to draw the concave polygons. 
-                        Closer to 1: convex. Closer to 0, concave. Default: 0.8. 
-allow_holes             Can the polygons have holes? Default: false. 
-max_distance_ratio      Points distant more than this ratio times from the average 
-                        distance between points are not considered. Default: 1.6.
-minimal_polygon_points  Minimal number of points to build a polygon.
-force_homogeneity       Uses max_distance_ratio also to compare with the avg distance
-                        between points of all the other polygons of the same family level.
-                        This helps to discard outliers. The result are homogeneous polygons. 
-dont_create_polygons    (boolean) Default: false.
-table                   Table where polygons are saved. This option is overriden 
-                        by args of create_polygons_family method.
-```
+### General options
 
-Postgres options
-```
-db_name                The db *must* have the Postgis extension installed.
-db_username
-db_password
-db_host                Default: localhost.
-db_port                Default: 5432.
-db_max_connections     Default: 10.
-```
+ Option | Explanation
+--------|-------------
+use_cache               | Boolean. Default: false.
+cache_expiration_time   | Default: 7200.
+projection              | Default: EPSG 4326 (WGS84).
+target_percent          | Require to draw the concave polygons. Closer to 1: convex. Closer to 0, concave. Default: 0.8. 
+allow_holes             | Can the polygons have holes? Default: false. 
+max_distance_ratio      | Points distant more than this ratio times from the average 
+                        | distance between points are not considered. Default: 1.6.
+minimal_polygon_points  | Minimal number of points to build a polygon.
+force_homogeneity       | Uses max_distance_ratio also to compare with the avg distance between points of all the other polygons of the same family level. This helps to discard outliers. The result are homogeneous polygons. 
+dont_create_polygons    | (boolean) Default: false.
+table                   | Table where polygons are saved. This option is overriden by args of create_polygons_family method.
+
+#### Geonames classes options
+
+ Option | Explanation
+--------|------------
+default_country   | Default country.
+geonames_username | **API class**. Geonames API username.
+dump              | **Dump class**. Path to dump file.
+max_points        | **Dump class**. Max number of points to consider from dump file.
+
+#### FromHash class options
+
+ Option | Explanation
+--------|------------
+hash  | Array of hashes. Each hash should be something like `{:tag=>'tag',:y=>some_lat, :x=>some_lon}`
+
+#### CSVParser
+
+ Option | Explanation
+--------|------------
+csv_filename | Path to CSV file.
+
+
+#### Postgres options
+
+ Option | Explanation
+--------|------------
+db_name              | The db *must* have the Postgis extension installed.
+db_username          |
+db_password          | 
+db_host              | Default: localhost.
+db_port              | Default: 5432.
+db_max_connections   | Default: 10.
+
 
 TODO
 ----

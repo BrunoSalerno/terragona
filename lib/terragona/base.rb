@@ -15,8 +15,9 @@ module Terragona
 
       concave_hull = ConcaveHull.new(opts)
 
-      if (!names or names.empty?) and @input.class == Generic::CSVParser
-        n = {:name => 'CSV'}
+      if (!names or names.empty?) and
+          (@input.class == Generic::CSVParser or @input.class == Generic::FromHash)
+        n = {:name => :generic}
         name = @input.search(n)
         process_points(n,name,concave_hull,opts)
         return [name]
@@ -80,6 +81,13 @@ module Terragona
     def initialize (options={})
       super
       @input = Generic::CSVParser.new(options)
+    end
+  end
+
+  class FromHash < Base
+    def initialize (options={})
+      super
+      @input = Generic::FromHash.new(options)
     end
   end
 end
